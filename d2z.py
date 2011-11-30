@@ -47,11 +47,20 @@ def d2z(A, B, k):
     return (d2(A, B, k) - E_d2(A, B, k, f_a, f_b))/(V_d2(A, B, k, f_a, f_b) ** 0.5)
 
 def main():
-    #TODO(simon) More stuff here...
+    import argparse
+    parser = argparse.ArgumentParser(description='Compute d2z scores.')
+    parser.add_argument("-a", type=int, default=1, help='Field number of A (training) sequences.')
+    parser.add_argument("-b", type=int, default=2, help='Field number of B (test) sequences.')
+    parser.add_argument("-k", type=int, default=4, help='k-mer lengths.')
+    parser.add_argument("-l", type=int, default=None, help='Length of scanning window. Defaults to the average of training sequences.')
+    OPTS = parser.parse_args()
     line_tups = read_fields()
+    a_seqs = [l[OPTS.a-1] for l in line_tups]
+    a_seq = ''.join(a_seqs)
+    window = float(len(a_seq))/len(a_seqs)
     for l in line_tups:
-        hg_seq, hg_seq_long, danrer_seq = l[1], l[2], l[3]
-        # print "d2z score: %s" %(d2z(hg_seq, hg_seq_long, 4))
+        b_seq = l[OPTS.b-1]
+        sys.stdout.write('%s\n' % d2z(a_seq, b_seq, OPTS.k))
 
 
 if __name__ == '__main__':

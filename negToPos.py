@@ -4,7 +4,7 @@ import sys
 from util import read_fields
 
 import argparse
-parser = argparse.ArgumentParser(description='Append fields for negative strand coordinates.')
+parser = argparse.ArgumentParser(description='Append fields with positive strand coordinates.')
 parser.add_argument("-f", type=int, default=0, help='Field number of the strand coordinates.')
 OPTS = parser.parse_args()
 line_tups = read_fields(f=open('danRer5.lengths.txt'))
