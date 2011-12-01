@@ -4,16 +4,21 @@ D2z reference here: http://bioinformatics.oxfordjournals.org/content/23/13/i249.
 """
 import sys
 from collections import Counter
-from util import read_fields
+from util import AFModel, read_fields
 
 def k_word_counts(seq, k):
     return Counter([seq[i:i+k] for i in range(len(seq)-k)])
 
-def letter_prob(seq):
-    return dict([(letter, float(count)/len(seq)) for letter, count in Counter(seq).iteritems()])
+def normalize_counters(counters):
+    counter = Counter()
+    for c in counters:
+        counter += c
+    total = sum(counter.values())
+    return dict([(letter, float(count)/total) for letter, count in counter.iteritems()])
 
-def d2(A, B, k):
-    N_A, N_B = k_word_counts(A, k), k_word_counts(B, k)
+def d2(A, B, k, N_A=None, N_B=None):
+    N_A = N_A or k_word_counts(A, k)
+    N_B = N_B or k_word_counts(B, k)
     return sum([N_A[a]*N_B[a] for a in N_A if a in N_B])
 
 def g(f_a, f_b, x, y):
@@ -42,25 +47,51 @@ def V_d2(A, B, k, f_a, f_b):
         variance += 2*(nbar1-l)*(nbar2-l)*(pow(p2,k+l)-pow(p2,2*k)) # l>0 terms
     return variance
 
-def d2z(A, B, k):
-    f_a, f_b = letter_prob(A), letter_prob(B)
-    return (d2(A, B, k) - E_d2(A, B, k, f_a, f_b))/(V_d2(A, B, k, f_a, f_b) ** 0.5)
+def d2z(A, B, k, f_a=None, f_b=None, N_A=None, N_B=None):
+    f_a = f_a or normalize_counters([Counter(A)])
+    f_b = f_b or normalize_counters([Counter(B)])
+    return (d2(A, B, k, N_A=N_A, N_B=N_B) - E_d2(A, B, k, f_a, f_b))/(V_d2(A, B, k, f_a, f_b) ** 0.5)
+
+class D2z(AFModel):
+    def __init__(self, k=4, l=None):
+        """ Initialize the model.
+
+        Parameters:
+          k (int): k-mer length.
+          l (int): Sliding window length.
+        """
+        self.k = k
+        self.l = l
+
+    def fit(self, X):
+        self.l = self.l or float(len(''.join(X)))/len(X)
+        self.A = ''.join(X)
+        self.f_a = normalize_counters([Counter(x) for x in X])
+        self.N_A = normalize_counters([k_word_counts(x, self.k) for x in X])
+
+    def score(self, X):
+        return [d2z(self.A, x, self.k, f_a=self.f_a, N_A=self.N_A) for x in X]
+
+    def scan(self, X):
+        pass # Not implemented yet.
+
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Compute d2z scores.')
     parser.add_argument("-a", type=int, default=1, help='Field number of A (training) sequences.')
     parser.add_argument("-b", type=int, default=2, help='Field number of B (test) sequences.')
+    parser.add_argument("-c", type=int, default=3, help='Field number of  (test) sequences.')
     parser.add_argument("-k", type=int, default=4, help='k-mer lengths.')
     parser.add_argument("-l", type=int, default=None, help='Length of scanning window. Defaults to the average of training sequences.')
     OPTS = parser.parse_args()
     line_tups = read_fields()
     a_seqs = [l[OPTS.a-1] for l in line_tups]
-    a_seq = ''.join(a_seqs)
-    window = float(len(a_seq))/len(a_seqs)
-    for l in line_tups:
-        b_seq = l[OPTS.b-1]
-        sys.stdout.write('%s\n' % d2z(a_seq, b_seq, OPTS.k))
+    clf = D2z()
+    clf.fit(a_seqs)
+    b_seqs = [l[OPTS.b-1] for l in line_tups]
+    for b in b_seqs:
+        sys.stdout.write('%s\n' % clf.score([b])[0])
 
 
 if __name__ == '__main__':
