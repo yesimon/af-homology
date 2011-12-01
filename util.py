@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import re
 import sys
+from operator import itemgetter
 
 dense_regex = re.compile(r'(?P<chrom>\w+):(?P<start>\d+)-(?P<end>\d+),(?P<dir>[+-])')
 forward_regex = re.compile(r'(?P<chrom>\w+):(?P<start>\d+)-(?P<end>\d+)')
@@ -26,7 +27,7 @@ def parse_coords(co):
     dictionary of relevant coordinates. Raises exception on error.
     """
     if not isinstance(co, basestring):
-        '\t'.join(co[:6])
+        co = '\t'.join(co[:6])
     mo = None
     if not mo: mo = dense_regex.match(co)
     if not mo: mo = forward_regex.match(co)
@@ -35,10 +36,26 @@ def parse_coords(co):
     if not mo: raise Exception
     return set_missing(mo.groupdict(), 'dir', '+')
 
+def index_coords(co, index, l=None):
+    """Returns modified coordinates with forward index and window length l
+    accounting for strand direction."""
+    if co['dir'] == '+':
+        co['start'] += index
+        co['end'] += index
+    elif co['dir'] == '-':
+        co['start'] -= index
+        co['end'] -= index
+    if l: co['end'] = co['start'] + l
+    return co
+
 class AFModel(object):
-    def __init__(self):
-        """Initialize the model."""
-        return
+    def __init__(self, l=None):
+        """Initialize the model.
+
+        Parameters:
+          l (int): Sliding window length.
+        """
+        self.l = l
 
     def fit(self, X):
         """Fit the model against a list X of sequence strings.
@@ -62,13 +79,20 @@ class AFModel(object):
         """
         return
 
-    def scan(self, X):
+    def scan(self, X, n=20):
         """Scan a list X of sequence strings with a sliding window.
 
         Parameters:
           X (list): List of sequence strings.
+          n (int): Number of top hits.
 
         Returns:
-          (list) List of 20 best (index, score) tuples.
+          (list) List of (list) of n best (index, score) tuples. If n == 1,
+          return list of tuples directly.
         """
-        return
+        results = []
+        for x in X:
+            hits = list(enumerate(self.score([x[i:i+self.l] for i in range(len(x)-self.l)])))
+            hits.sort(key=itemgetter(1))
+            results.append(hits[:n])
+        return results

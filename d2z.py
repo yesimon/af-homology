@@ -53,15 +53,14 @@ def d2z(A, B, k, f_a=None, f_b=None, N_A=None, N_B=None):
     return (d2(A, B, k, N_A=N_A, N_B=N_B) - E_d2(A, B, k, f_a, f_b))/(V_d2(A, B, k, f_a, f_b) ** 0.5)
 
 class D2z(AFModel):
-    def __init__(self, k=4, l=None):
+    def __init__(self, k=4, *args, **kwargs):
         """ Initialize the model.
 
         Parameters:
           k (int): k-mer length.
-          l (int): Sliding window length.
         """
+        super(D2z, self).__init__(*args, **kwargs)
         self.k = k
-        self.l = l
 
     def fit(self, X):
         self.l = self.l or float(len(''.join(X)))/len(X)
@@ -71,10 +70,6 @@ class D2z(AFModel):
 
     def score(self, X):
         return [d2z(self.A, x, self.k, f_a=self.f_a, N_A=self.N_A) for x in X]
-
-    def scan(self, X):
-        pass # Not implemented yet.
-
 
 def main():
     import argparse
