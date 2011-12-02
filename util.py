@@ -34,22 +34,27 @@ def parse_coords(co):
     if not mo: mo = bed_regex.match(co)
     if not mo: mo = bed_short_regex.search(co)
     if not mo: raise Exception
-    return set_missing(mo.groupdict(), 'dir', '+')
+    d = set_missing(mo.groupdict(), 'dir', '+')
+    d['start'] = int(d['start'])
+    d['end'] = int(d['end'])
+    return d
 
 def index_coords(co, index, l=None):
-    """Returns modified coordinates with forward index and window length l
-    accounting for strand direction."""
-    if co['dir'] == '+':
-        co['start'] += index
-        co['end'] += index
-    elif co['dir'] == '-':
-        co['start'] -= index
-        co['end'] -= index
+    """Returns modified coordinates with forward index and window length l.
+    Works for native + and - coordinates. Do not use with - coordinates
+    coverted to + beause they will be backwards."""
+    co['start'] += index
+    co['end'] += index
     if l: co['end'] = co['start'] + l
     return co
 
+def overlap_coords(c1, c2):
+    """Consider whether c1 overlaps c2."""
+    within_c2 = lambda c: c2['start'] < c < c2['end']
+    return within_c2(c1['start']) or within_c2(c1['end'])
+
 class AFModel(object):
-    def __init__(self, l=None):
+    def __init__(self, l=None, *args, **kwargs):
         """Initialize the model.
 
         Parameters:
@@ -93,6 +98,9 @@ class AFModel(object):
         results = []
         for x in X:
             hits = list(enumerate(self.score([x[i:i+self.l] for i in range(len(x)-self.l)])))
-            hits.sort(key=itemgetter(1))
-            results.append(hits[:n])
+            hits.sort(key=itemgetter(1), reverse=True)
+            if n == 1:
+                results.append(hits[0])
+            else:
+                results.append(hits[:n])
         return results

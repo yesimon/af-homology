@@ -8,7 +8,7 @@ zebrafish_lengths = dict([(tup[0], int(tup[1].replace(',',''))) for tup in line_
 def forward_strand_zebrafish(coord):
     """Compute forward strand coordinates of zebrafish. Returns coord dict."""
     if coord['dir'] == '-':
-        length, start, end = zebrafish_lengths[coord['chrom']], int(coord['start']), int(coord['end'])
+        length, start, end = zebrafish_lengths[coord['chrom']], coord['start'], coord['end']
         coord['start'] = length - end
         coord['end'] = length - start
     return coord

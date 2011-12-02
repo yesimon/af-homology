@@ -63,30 +63,38 @@ class D2z(AFModel):
         self.k = k
 
     def fit(self, X):
-        self.l = self.l or float(len(''.join(X)))/len(X)
+        self.l = self.l or int(float(len(''.join(X)))/len(X))
         self.A = ''.join(X)
         self.f_a = normalize_counters([Counter(x) for x in X])
         self.N_A = normalize_counters([k_word_counts(x, self.k) for x in X])
+        return self
 
     def score(self, X):
-        return [d2z(self.A, x, self.k, f_a=self.f_a, N_A=self.N_A) for x in X]
+        return [d2(self.A, x, self.k, N_A=self.N_A) for x in X]
+        # return [d2z(self.A, x, self.k, f_a=self.f_a, N_A=self.N_A) for x in X]
+
+def add_d2z_arguments(parser, main=False):
+    parser.add_argument("-k", type=int, default=4, help='k-mer lengths.')
+    if not main:
+        return parser
+    parser.add_argument("-a", type=int, default=1, help='Field number of A (training) sequences.')
+    parser.add_argument("-b", type=int, default=2, help='Field number of B (test) sequences.')
+    parser.add_argument("-c", type=int, default=3, help='Field number of coordinates.')
+    parser.add_argument("-l", type=int, default=None, help='Length of scanning window. Defaults to the average of training sequences.')
+    return parser
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Compute d2z scores.')
-    parser.add_argument("-a", type=int, default=1, help='Field number of A (training) sequences.')
-    parser.add_argument("-b", type=int, default=2, help='Field number of B (test) sequences.')
-    parser.add_argument("-c", type=int, default=3, help='Field number of  (test) sequences.')
-    parser.add_argument("-k", type=int, default=4, help='k-mer lengths.')
-    parser.add_argument("-l", type=int, default=None, help='Length of scanning window. Defaults to the average of training sequences.')
+    parser = add_d2z_arguments(parser, main=True)
     OPTS = parser.parse_args()
     line_tups = read_fields()
     a_seqs = [l[OPTS.a-1] for l in line_tups]
     clf = D2z()
     clf.fit(a_seqs)
-    b_seqs = [l[OPTS.b-1] for l in line_tups]
-    for b in b_seqs:
-        sys.stdout.write('%s\n' % clf.score([b])[0])
+    for l in line_tups:
+        name, b = l[0], l[OPTS.b-1]
+        sys.stdout.write('%s\t%s\n' % (name, clf.scan([b])[0]))
 
 
 if __name__ == '__main__':
