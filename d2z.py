@@ -63,6 +63,7 @@ class D2z(AFModel):
         self.k = k
 
     def fit(self, X):
+        super(D2z, self).fit(X)
         self.l = self.l or int(float(len(''.join(X)))/len(X))
         self.A = ''.join(X)
         self.f_a = normalize_counters([Counter(x) for x in X])

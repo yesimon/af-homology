@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 import argparse
+import math
 import sys
 from collections import defaultdict
 from itertools import product
 import numpy as np
-from util import AFModel
+from util import AFModel, shuffle_string
 
 def generate_hex_map():
+    hex_map = defaultdict(float)
     A = 'ACTG'
-    seqs = [''.join(seq) for seq in product(A, repeat=6)]
-    return dict([(seq, i) for i, seq in enumerate(seqs)])
+    seqs = [''.join(seq) for seq in product(A, repeat=5)]
+    hex_map.update(dict([(seq, i) for i, seq in enumerate(seqs)]))
+    return hex_map
 
 def generate_hex_fuzzy(hex_map):
     A = set(['A', 'C', 'T', 'G'])
@@ -22,7 +25,7 @@ def generate_hex_fuzzy(hex_map):
 HEX_MAP = generate_hex_map()
 HEX_FUZZY = generate_hex_fuzzy(HEX_MAP)
 
-def transition_matrix(seqs, w=0.25, k=6):
+def transition_matrix(seqs, w=0.25, k=5):
     """Generate numpy transition matrix."""
     tm = np.zeros([len(HEX_MAP), len(HEX_MAP)])
     for seq in seqs:
@@ -34,32 +37,41 @@ def transition_matrix(seqs, w=0.25, k=6):
     return tm
 
 class HexMCD(AFModel):
-    def __init__(self, bg_file=None, bg_list=None):
+    def __init__(self, bg_file=None, bg_list=None, *args, **kwargs):
         """Initialize background markov model from bg."""
         assert bg_file or bg_list
+        super(HexMCD, self).__init__(*args, **kwargs)
         self.w = 0.25
-        self.k = 6
+        self.k = 5
         if bg_file:
-            self.bg_tm = None
+            raise Exception
         if bg_list:
-            self.bg_tm = transition_matrix(bg_list, w=self.w, k=self.k)
+            shuffled = [shuffle_string(s) for s in bg_list]
+            bg_tm = transition_matrix(shuffled, w=self.w, k=self.k)
+            self.bg_tm = bg_tm / np.sum(bg_tm)
+        self.bg_tm_rowsum = np.sum(self.bg_tm, axis=1)
 
     def fit(self, X):
-        self.tm = transition_matrix(X, w=self.w, k=self.k)
+        super(HexMCD, self).fit(X)
+        tm = transition_matrix(X, w=self.w, k=self.k)
+        self.tm = tm / np.sum(tm)
+        self.tm_rowsum = np.sum(self.tm, axis=1)
         return self
 
     def prob(self, seq):
+        S = 0
         for i in range(len(seq)-self.k-1):
             s, t = seq[i:i+self.k], seq[i+1:i+self.k+1]
-            #self.tm[HEX_MAP[s], HEX_MAP[t]] / 
+            a_plus = self.tm[HEX_MAP[s], HEX_MAP[t]] / self.tm_rowsum[HEX_MAP[s]]
+            a_minus = self.bg_tm[HEX_MAP[s], HEX_MAP[t]] / self.bg_tm_rowsum[HEX_MAP[s]]
+            if a_minus and a_plus: S += math.log(a_plus/a_minus)
+        return S
 
     def score(self, X):
-        for x in X:
-
-
+        return [self.prob(x) for x in X]
 
 def add_hexmcd_arguments(parser, main=False):
     parser.add_argument('--bg', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
     if not main:
         return parser
-    return parser
+    raise Exception

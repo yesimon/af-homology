@@ -2,6 +2,7 @@
 import re
 import sys
 from operator import itemgetter
+from random import shuffle
 
 dense_regex = re.compile(r'(?P<chrom>\w+):(?P<start>\d+)-(?P<end>\d+),(?P<dir>[+-])')
 forward_regex = re.compile(r'(?P<chrom>\w+):(?P<start>\d+)-(?P<end>\d+)')
@@ -18,6 +19,11 @@ COORD_FORMATS = {
 def set_missing(d, k, v):
     if not k in d: d[k] = v
     return d
+
+def shuffle_string(seq):
+    seq_list = list(seq)
+    shuffle(seq_list)
+    return ''.join(seq_list)
 
 def read_fields(f=sys.stdin, sep=None):
     return [l.strip().split(sep) for l in f.read().splitlines() if l]
@@ -71,6 +77,7 @@ class AFModel(object):
         Returns:
           (instance) self
         """
+        self.l = self.l or int(float(len(''.join(X)))/len(X))
         return self
 
     def score(self, X):
