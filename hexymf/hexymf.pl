@@ -1,4 +1,4 @@
-#!/bin/perl
+#!/usr/bin/env perl
 # hexymf_score.pl - Determines the score of a sequence
 # usage: <score_result_file_name> <test_sequence>
 
