@@ -125,8 +125,6 @@ while (<STDIN>) {
 	my $zeb_chr = @slice[0];
 	my $zeb_start = @slice[1];
 
-	#print "human len is " . length($human_dna) . ", zebrafish len is " . length($zebra_dna) . "\n";
-
 	ymf_train($human_dna);
 
 	my $i;
@@ -141,7 +139,3 @@ while (<STDIN>) {
 	}
 }
 
-#foreach $value (sort {$count{$b} <=> $count{$a} } keys %count)
-#{
-#	print "$value\t$count{$value}\n";
-#}
