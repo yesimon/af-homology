@@ -3,6 +3,7 @@ import re
 import sys
 from operator import itemgetter
 from random import shuffle
+from Bio.Seq import Seq
 
 dense_regex = re.compile(r'(?P<chrom>\w+):(?P<start>\d+)-(?P<end>\d+),(?P<dir>[+-])')
 forward_regex = re.compile(r'(?P<chrom>\w+):(?P<start>\d+)-(?P<end>\d+)')
@@ -49,10 +50,11 @@ def index_coords(co, index, l=None):
     """Returns modified coordinates with forward index and window length l.
     Works for native + and - coordinates. Do not use with - coordinates
     coverted to + beause they will be backwards."""
-    co['start'] += index
-    co['end'] += index
-    if l: co['end'] = co['start'] + l
-    return co
+    c = co.copy()
+    c['start'] += index
+    c['end'] += index
+    if l: c['end'] = c['start'] + l
+    return c
 
 def overlap_coords(c1, c2):
     """Consider whether c1 overlaps c2."""
@@ -91,12 +93,13 @@ class AFModel(object):
         """
         return
 
-    def scan(self, X, n=20):
+    def scan(self, X, n=20, reverse_complement=True):
         """Scan a list X of sequence strings with a sliding window.
 
         Parameters:
           X (list): List of sequence strings.
           n (int): Number of top hits.
+          reverse_complement (bool): Also scan reverse complement of sequence.
 
         Returns:
           (list) List of (list) of n best (index, score) tuples. If n == 1,
@@ -104,10 +107,22 @@ class AFModel(object):
         """
         results = []
         for x in X:
-            hits = list(enumerate(self.score([x[i:i+self.l] for i in range(len(x)-self.l)])))
+            hits = list(enumerate(self.score([x[i:i+self.l] for i in range(len(x)-self.l+1)])))
+            x_len = len(x)
+            x_rc = Seq(x).reverse_complement().tostring()
+            hits_rc = list(enumerate(self.score([x_rc[i:i+self.l] for i in range(len(x)-self.l+1)])))
+            hits_rc = [(x_len - i - self.l, score) for i, score in hits_rc]
+            hits_d = dict(hits)
+            hits_rc_d = dict(hits_rc)
+            for i, score in hits_d.iteritems():
+                if hits_rc_d[i] > score:
+                    hits_d[i] = hits_rc_d[i]
+            hits = list(hits_d.items())
             hits.sort(key=itemgetter(1), reverse=True)
             if n == 1:
                 results.append(hits[0])
+            elif n == None:
+                results.append(hits)
             else:
                 results.append(hits[:n])
         return results

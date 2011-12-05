@@ -47,14 +47,12 @@ class HexMCD(AFModel):
             raise Exception
         if bg_list:
             shuffled = [shuffle_string(s) for s in bg_list]
-            bg_tm = transition_matrix(shuffled, w=self.w, k=self.k)
-            self.bg_tm = bg_tm / np.sum(bg_tm)
+            self.bg_tm = transition_matrix(shuffled, w=self.w, k=self.k)
         self.bg_tm_rowsum = np.sum(self.bg_tm, axis=1)
 
     def fit(self, X):
         super(HexMCD, self).fit(X)
-        tm = transition_matrix(X, w=self.w, k=self.k)
-        self.tm = tm / np.sum(tm)
+        self.tm = transition_matrix(X, w=self.w, k=self.k)
         self.tm_rowsum = np.sum(self.tm, axis=1)
         return self
 

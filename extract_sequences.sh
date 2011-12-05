@@ -4,7 +4,7 @@
 GENES=$(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f4)
 
 # Get a list of zebrafish negative strand sequences - faRc used for reverse complement.
-NEG_SEQS=$(twoBitToFa -seqList=<(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f8 | grep ,- | ./negToPos.py | cut -f2) -noMask danRer5.2bit stdout | faRc stdin stdout -keepCase | ./fastaToTxt.py)
+NEG_SEQS=$(twoBitToFa -seqList=<(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f8 | grep ,- | ./negToPos.py | cut -f2) -noMask danRer5.2bit stdout | ./fastaToTxt.py)
 
 # Get a list of zebrafish positive strand sequences.
 POS_SEQS=$(twoBitToFa -seqList=<(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f8 | grep ,+ | ./negToPos.py | cut -f2) -noMask danRer5.2bit stdout | ./fastaToTxt.py)

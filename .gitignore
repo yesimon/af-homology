@@ -27,3 +27,5 @@ dist
 *.2bit
 
 hg18.toDanRer5.seqs.txt
+hexymf/ymf_stats
+

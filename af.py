@@ -5,6 +5,29 @@ from hexmcd import add_hexmcd_arguments, HexMCD
 from util import read_fields, index_coords, parse_coords, overlap_coords, COORD_FORMATS
 from negToPos import forward_strand_zebrafish
 
+def row_search(OPTS, m, line_tups):
+    for l in line_tups:
+        a, b, c, = l[OPTS.a-1], l[OPTS.b-1], forward_strand_zebrafish(parse_coords(l[OPTS.c-1]))
+        correct_coord = parse_coords(l[OPTS.valid-1])
+        m.fit([a])
+        hits = m.scan([b], n=None, reverse_complement=True)[0]
+        coords = [(index_coords(c, index, l=m.l), score) for index, score in hits]
+        # hit_index = 0
+        # valid_coord = None
+        # hit = None
+        # for coord in coords:
+        #     if overlap_coords(coord, correct_coord):
+        #         hit = hit_index
+        #         valid_coord = c
+        #         break
+        #     hit_index += 1
+        # if hit == None:
+        #     continue
+        for coord, score in coords:
+            stats = '\t'.join([str(score)])
+            coord_str = COORD_FORMATS['forward'].format(**coord)
+            sys.stdout.write('\t'.join([l[0], coord_str, stats]) + '\n')
+
 def main():
     import argparse
     parser = argparse.ArgumentParser('Harness for alignment free homology.', add_help=False)
@@ -28,18 +51,28 @@ def main():
         m = D2z(**vars(OPTS))
     if OPTS.model == 'hexmcd':
         m = HexMCD(bg_list=[l[6] for l in line_tups], **vars(OPTS))
+    row_search(OPTS, m, line_tups)
+    return
     a_seqs = [l[OPTS.a-1] for l in line_tups]
     m.fit(a_seqs)
     for l in line_tups:
         b, c, correct_coord = l[OPTS.b-1], parse_coords(l[OPTS.c-1]), parse_coords(l[OPTS.valid-1])
-        hits = m.scan([b])[0]
+        hits = m.scan([b], n=None, reverse_complement=True)[0]
         coords = [forward_strand_zebrafish(index_coords(c, index, l=m.l)) for index, score in hits]
-        successes = [overlap_coords(c, correct_coord) for c in coords]
-        if any(successes):
-            sys.stdout.write(COORD_FORMATS['dense'].format(**c) + '\n')
-        else:
-            sys.stdout.write('No hits.\n')
-
+        hit_index = 0
+        valid_coord = None
+        hit = None
+        for coord in coords:
+            if overlap_coords(coord, correct_coord):
+                hit = hit_index
+                valid_coord = c
+                break
+            hit_index += 1
+        if hit == None:
+            continue
+        stats = '\t'.join([str(hit), str(len(b))])
+        coord_str = COORD_FORMATS['dense'].format(**valid_coord)
+        sys.stdout.write('\t'.join([l[0], coord_str, stats]) + '\n')
 
 if __name__ == '__main__':
     main()
