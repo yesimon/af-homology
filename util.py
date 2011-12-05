@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import math
 import re
 import sys
 from operator import itemgetter
@@ -61,6 +62,19 @@ def overlap_coords(c1, c2):
     within_c2 = lambda c: c2['start'] < c < c2['end']
     return within_c2(c1['start']) or within_c2(c1['end'])
 
+def progress(width, percent, pre=None):
+    # width defines bar width
+    # percent defines current percentage
+    marks = math.floor(width * (percent / 100.0))
+    spaces = math.floor(width - marks)
+    loader = '[' + ('=' * int(marks)) + (' ' * int(spaces)) + ']'
+    if pre: loader = pre + ' ' + loader
+    sys.stdout.write("%s %d%%\r" % (loader, percent))
+    if percent >= 100:
+        sys.stdout.write("\n")
+    sys.stdout.flush()
+
+
 class AFModel(object):
     def __init__(self, l=None, *args, **kwargs):
         """Initialize the model.
@@ -93,13 +107,14 @@ class AFModel(object):
         """
         return
 
-    def scan(self, X, n=20, reverse_complement=True):
+    def scan(self, X, n=20, reverse_complement=True, sort=True):
         """Scan a list X of sequence strings with a sliding window.
 
         Parameters:
           X (list): List of sequence strings.
-          n (int): Number of top hits.
+          n (int): Number of hits. None to return all hits.
           reverse_complement (bool): Also scan reverse complement of sequence.
+          sort (bool): If true, sort the sequences by highest score.
 
         Returns:
           (list) List of (list) of n best (index, score) tuples. If n == 1,

@@ -25,9 +25,12 @@ def generate_hex_fuzzy(hex_map):
 HEX_MAP = generate_hex_map()
 HEX_FUZZY = generate_hex_fuzzy(HEX_MAP)
 
-def transition_matrix(seqs, w=0.25, k=5):
+def transition_matrix(seqs, w=0.25, k=5, smoothing=None):
     """Generate numpy transition matrix."""
-    tm = np.zeros([len(HEX_MAP), len(HEX_MAP)])
+    if smoothing == 'ones':
+        tm = np.ones([len(HEX_MAP), len(HEX_MAP)])
+    else:
+        tm = np.zeros([len(HEX_MAP), len(HEX_MAP)])
     for seq in seqs:
         for i in range(len(seq)-k-1):
             s, t = seq[i:i+k], seq[i+1:i+k+1]
@@ -37,22 +40,24 @@ def transition_matrix(seqs, w=0.25, k=5):
     return tm
 
 class HexMCD(AFModel):
-    def __init__(self, bg_file=None, bg_list=None, *args, **kwargs):
+    def __init__(self, bg_file=None, bg_list=None, smoothing=None, *args, **kwargs):
         """Initialize background markov model from bg."""
         assert bg_file or bg_list
         super(HexMCD, self).__init__(*args, **kwargs)
         self.w = 0.25
         self.k = 5
+        self.smoothing = smoothing
         if bg_file:
             raise Exception
         if bg_list:
             shuffled = [shuffle_string(s) for s in bg_list]
-            self.bg_tm = transition_matrix(shuffled, w=self.w, k=self.k)
+            self.bg_tm = transition_matrix(shuffled, w=self.w, k=self.k,
+                                           smoothing=self.smoothing)
         self.bg_tm_rowsum = np.sum(self.bg_tm, axis=1)
 
     def fit(self, X):
         super(HexMCD, self).fit(X)
-        self.tm = transition_matrix(X, w=self.w, k=self.k)
+        self.tm = transition_matrix(X, w=self.w, k=self.k, smoothing=self.smoothing)
         self.tm_rowsum = np.sum(self.tm, axis=1)
         return self
 
