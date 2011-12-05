@@ -134,7 +134,7 @@ while (<STDIN>) {
 	for ($i = 0; $i < length($zebra_dna) - $tlen + 1; $i++) {
 		my $dna = substr($zebra_dna, $i, $tlen);
 #		my $score = max(ymf_score($dna), ymf_score(rc($dna)));
-		my $score = ymf_score($dna . rc($dna));
+		my $score = ymf_score($dna . "N" . rc($dna));
 		my $pstart = $zeb_start + $i;
 		my $pend = $pstart + $tlen;
 		print "$cns\t$chr\t$start\t$end\t$zeb_chr:$pstart-$pend\t$score\n";
