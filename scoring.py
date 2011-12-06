@@ -6,14 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from util import read_fields, parse_coords, parse_dat, overlap_coords, index_coords
 from peakdetect import peakdetect, smooth
-from negToPos import forward_strand_zebrafish
 
 def parse_extra_data(line_tups):
     extra = {}
     for l in line_tups:
       extra[l[0]] = {
         'name': l[0],
-        'dr_co': forward_strand_zebrafish(parse_coords(l[4])),
+        'dr_co': parse_coords(l[4]),
         'dr_valid_co': parse_coords(l[8]),
         'dr_seq': l[7],
         'hg_co': parse_coords('\t'.join(l[1:4])),
@@ -26,10 +25,10 @@ def overlap(cne_dict, extra):
   results = defaultdict(dict)
   for cne, scores in cne_dict.iteritems():
     scores = sorted(enumerate(scores), key=itemgetter(1), reverse=True)
-    for i, score in scores:
+    for hit_rank, (i, score) in enumerate(scores):
       if overlap_coords(index_coords(extra[cne]['dr_co'], i, l=window_len),
                         extra[cne]['dr_valid_co']):
-        results[cne]['rank'] = i
+        results[cne]['rank'] = hit_rank + 1
         results[cne]['sequence_length'] = len(scores)
         break
   return results
