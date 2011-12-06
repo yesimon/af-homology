@@ -3,14 +3,8 @@
 # Get a sorted list of all genes.
 GENES=$(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f4)
 
-# Get a list of zebrafish negative strand sequences - faRc used for reverse complement.
-NEG_SEQS=$(twoBitToFa -seqList=<(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f8 | grep ,- | ./negToPos.py | cut -f2) -noMask danRer5.2bit stdout | ./fastaToTxt.py)
-
-# Get a list of zebrafish positive strand sequences.
-POS_SEQS=$(twoBitToFa -seqList=<(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f8 | grep ,+ | ./negToPos.py | cut -f2) -noMask danRer5.2bit stdout | ./fastaToTxt.py)
-
 # All zebrafish sequences.
-DANRER_SEQS=$(cat <(paste <(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | grep ,- | cut -f4) <(echo "$NEG_SEQS")) <(paste <(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | grep ,+ | cut -f4) <(echo "$POS_SEQS")) | sort -k1,1)
+DANRER_SEQS=$(paste <(cut -f4 hg18.bejscHumanCNE.toDanRer5Region.txt) <(twoBitToFa -seqList=<(sort -k4,4 hg18.bejscHumanCNE.toDanRer5Region.txt | cut -f8 | awk 'sub("..$", "")') -noMask danRer5.2bit stdout | ./fastaToTxt.py) | sort -k1,1)
 
 # All human sequences.
 HG_SEQS=$(paste <(echo "$GENES") <(twoBitToFa -seqList=<(cut -f1,2,3 hg18.bejscHumanCNE.toDanRer5Region.txt | ./fieldsToCoord.py) -noMask hg18.2bit stdout | ./fastaToTxt.py) <(twoBitToFa -seqList=<(cut -f5,6,7 hg18.bejscHumanCNE.toDanRer5Region.txt | ./fieldsToCoord.py) -noMask hg18.2bit stdout | ./fastaToTxt.py) | sort -k1,1)
