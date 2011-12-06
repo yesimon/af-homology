@@ -74,6 +74,21 @@ def progress(width, percent, pre=None):
         sys.stdout.write("\n")
     sys.stdout.flush()
 
+# http://www.swharden.com/blog/2008-11-17-linear-data-smoothing-in-python/
+def smoothListGaussian(list,degree=5):
+    window=degree*2-1
+    weight=numpy.array([1.0]*window)
+    weightGauss=[]
+    for i in range(window):
+        i=i-degree+1
+        frac=i/float(window)
+        gauss=1/(numpy.exp((4*(frac))**2))
+        weightGauss.append(gauss)
+    weight=numpy.array(weightGauss)*weight
+    smoothed=[0.0]*(len(list)-window)
+    for i in range(len(smoothed)):
+        smoothed[i]=sum(numpy.array(list[i:i+window])*weight)/sum(weight)
+    return smoothed
 
 class AFModel(object):
     def __init__(self, l=None, *args, **kwargs):
@@ -133,11 +148,8 @@ class AFModel(object):
                 if hits_rc_d[i] > score:
                     hits_d[i] = hits_rc_d[i]
             hits = list(hits_d.items())
-            hits.sort(key=itemgetter(1), reverse=True)
-            if n == 1:
-                results.append(hits[0])
-            elif n == None:
-                results.append(hits)
-            else:
-                results.append(hits[:n])
+            if sort: hits.sort(key=itemgetter(1), reverse=True)
+            if n == 1: results.append(hits[0])
+            elif n == None: results.append(hits)
+            else: results.append(hits[:n])
         return results

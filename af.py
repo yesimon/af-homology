@@ -14,12 +14,12 @@ def row_search(OPTS, m, line_tups):
     """
     rows = {}
     for i, l in enumerate(line_tups):
-        a, b, c, = l[OPTS.a-1], l[OPTS.b-1], parse_coords(l[OPTS.c-1])
+        name, a, b, c, = l[0], l[OPTS.a-1], l[OPTS.b-1], parse_coords(l[OPTS.c-1])
         m.fit([a])
         hits = m.scan([b], n=None, reverse_complement=True, sort=False)[0]
         coords = [(index_coords(c, index, l=m.l), score) for index, score in hits]
-        rows[l[0]] = coords
-        progress(50, (float(i)+1)/len(line_tups)*100, pre="Processing '%s'" % l[0])
+        rows[name] = coords
+        progress(50, (float(i)+1)/len(line_tups)*100, pre="Processing '%s'" % name)
     sys.stdout.write("Writing pickle file. Do not exit!\n")
     pkl = open(OPTS.model + '.pkl', 'wb')
     pickle.dump(rows, pkl, pickle.HIGHEST_PROTOCOL)
