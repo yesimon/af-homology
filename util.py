@@ -19,10 +19,6 @@ COORD_FORMATS = {
     'bed': '{chrom}\t{start}\t{end}',
 }
 
-def set_missing(d, k, v):
-    if not k in d: d[k] = v
-    return d
-
 def shuffle_string(seq):
     seq_list = list(seq)
     shuffle(seq_list)
@@ -49,7 +45,7 @@ def parse_coords(co):
     if not mo: mo = bed_regex.match(co)
     if not mo: mo = bed_short_regex.search(co)
     if not mo: raise Exception
-    d = set_missing(mo.groupdict(), 'dir', '+')
+    d = mo.groupdict()
     d['start'] = int(d['start'])
     d['end'] = int(d['end'])
     return d
