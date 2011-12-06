@@ -1,17 +1,10 @@
 #!/usr/bin/env python
-from collections import defaultdict
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from util import read_fields, parse_coords
+from util import read_fields, parse_coords, parse_dat
 from peakdetect import peakdetect, smooth
 from negToPos import forward_strand_zebrafish
-
-def parse_dat(line_tups):
-    cne_dict = defaultdict(list)
-    for cne, score in line_tups:
-        cne_dict[cne].append(score)
-    return cne_dict
 
 def plot_cne(name, scores, valid):
     scores = np.array([float(x) for x in scores])

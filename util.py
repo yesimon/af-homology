@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from collections import defaultdict
 import math
 import re
 import sys
@@ -29,6 +30,12 @@ def shuffle_string(seq):
 
 def read_fields(f=sys.stdin, sep=None):
     return [l.strip().split(sep) for l in f.read().splitlines() if l]
+
+def parse_dat(line_tups):
+    cne_dict = defaultdict(list)
+    for cne, score in line_tups:
+        cne_dict[cne].append(score)
+    return cne_dict
 
 def parse_coords(co):
     """Given a strand coordinate like 'chrX:1241-1888,+' or bed format return a
@@ -73,22 +80,6 @@ def progress(width, percent, pre=None):
     if percent >= 100:
         sys.stdout.write("\n")
     sys.stdout.flush()
-
-# http://www.swharden.com/blog/2008-11-17-linear-data-smoothing-in-python/
-def smoothListGaussian(list,degree=5):
-    window=degree*2-1
-    weight=numpy.array([1.0]*window)
-    weightGauss=[]
-    for i in range(window):
-        i=i-degree+1
-        frac=i/float(window)
-        gauss=1/(numpy.exp((4*(frac))**2))
-        weightGauss.append(gauss)
-    weight=numpy.array(weightGauss)*weight
-    smoothed=[0.0]*(len(list)-window)
-    for i in range(len(smoothed)):
-        smoothed[i]=sum(numpy.array(list[i:i+window])*weight)/sum(weight)
-    return smoothed
 
 class AFModel(object):
     def __init__(self, l=None, *args, **kwargs):
