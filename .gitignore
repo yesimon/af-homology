@@ -24,6 +24,7 @@ dist
 *.pyo
 *.tmp*
 .ropeproject/
+*.pkl
 *.2bit
 
 hg18.toDanRer5.seqs.txt

@@ -1,4 +1,4 @@
-#!/usr/bin/env perl 
+#!/usr/bin/env perl
 
 my $target = $ARGV[0];
 
@@ -40,9 +40,9 @@ while (<ANS>) {
 print "graphing $target...\n";
 
 close ANS;
- 
+
 open (GNUPLOT, "|gnuplot");
-print GNUPLOT "s(x) = x > $start && x < $end ? 500 : 0\n";
+print GNUPLOT "s(x) = x > $start && x < $end ? 8 : 0\n";
 print GNUPLOT <<EOPLOT;
 set terminal postscript enhanced "Courier" 14 linewidth 1 rounded
 
