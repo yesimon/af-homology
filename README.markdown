@@ -1,6 +1,8 @@
 Requirements
 ------------
  * Python 2.7, or 2.6 + argparse
+ * Perl
+ * Bash
  * Biopython
  * numpy, scipy, scikits.statsmodels, matplotlib
  * twoBitToFa (UCSC Kent)
@@ -27,7 +29,7 @@ These produce pickled files, which can be converted to .dat as below:
 
 For the alignments of HexDiff, HexYMF:
 
-    cat hg18.toDanRer5.seqs.txt | ./hexdiff.pl > hexdiff.dat
+    cat hg18.toDanRer5.seqs.txt | ./hexdiff.pl region 1.0  > hexdiff.dat
     cat hg18.toDanRer5.seqs.txt | hexymf/hexymf.pl > hexymf.dat
 
 Use scoring to generate ranked score reports using either the
