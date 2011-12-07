@@ -40,9 +40,10 @@ def ranked_peaks(cne_dict, extra):
     return abs(i - v_i)
   results = defaultdict(dict)
   for cne, scores in cne_dict.iteritems():
+    lookahead = len(scores) / 50
     scores = np.array([float(x) for x in scores])
     signal = smooth(scores, window_len=40, window='bartlett')
-    maxima = peakdetect(signal, lookahead=500)[0]
+    maxima = peakdetect(signal, lookahead=lookahead)[0]
     maxima.sort(key=itemgetter(1), reverse=True)
     if not maxima:
       print cne
