@@ -23,8 +23,8 @@ while (<ANS>) {
 	my $anscoord = $slice[5];
 
 	@slice = split(/\=|\:|\-/, $zebcoord);
-	my $zeb_chr = @slice[0];
-	my $zeb_start = @slice[1];
+	$zeb_chr = @slice[0];
+	$zeb_start = @slice[1];
 	my $zeb_end = @slice[2];
 
 	@slice = split(/\=|\:|\-/, $anscoord);
@@ -34,6 +34,7 @@ while (<ANS>) {
 
 	$start = $ans_start - $zeb_start;
 	$end = $start + $ans_end - $ans_start;
+#	print "found cne $cne $start $end\n";
 	last;
 }
 
@@ -42,7 +43,7 @@ print "graphing $target...\n";
 close ANS;
 
 open (GNUPLOT, "|gnuplot");
-print GNUPLOT "s(x) = x > $start && x < $end ? 8 : 0\n";
+print GNUPLOT "s(x) = x > $start && x < $end ? 4 : 0\n";
 print GNUPLOT <<EOPLOT;
 set terminal postscript enhanced "Courier" 14 linewidth 1 rounded
 
