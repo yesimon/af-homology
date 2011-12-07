@@ -1,3 +1,10 @@
+Alignment Free Homology Detection
+=================================
+These are a bunch of scripts that help detect sequence homology
+without the use of alignment. These mainly align a given training
+set of regions from hg18 to danRer5 identified using conserved
+flanks even though the middle region cannot be aligned.
+
 Requirements
 ------------
  * Python 2.7, or 2.6 + argparse
