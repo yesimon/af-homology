@@ -43,13 +43,13 @@ def ranked_peaks(cne_dict, extra):
 def main():
   import argparse
   parser = argparse.ArgumentParser()
-  parser.add_argument('--infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
+  parser.add_argument('-f', '--file', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                       help='Input file e.g. d2z.dat.')
   parser.add_argument('--extra_data', type=argparse.FileType('r'), default='hg18.toDanRer5.seqs.txt',
                     help='Extra data file e.g. hg18.toDanRer5.seqs.txt.')
   parser.add_argument('scoring', choices=['ranked_peaks', 'overlap'])
   OPTS = parser.parse_args()
-  line_tups = read_fields(f=OPTS.infile)
+  line_tups = read_fields(f=OPTS.file)
   cne_dict = parse_dat(line_tups)
   extra = parse_extra_data(read_fields(f=OPTS.extra_data))
   if OPTS.scoring == 'ranked_peaks':

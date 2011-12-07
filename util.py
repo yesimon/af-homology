@@ -85,7 +85,7 @@ def progress(width, percent, pre=None):
     spaces = math.floor(width - marks)
     loader = '[' + ('=' * int(marks)) + (' ' * int(spaces)) + ']'
     if pre: loader = pre + ' ' + loader
-    sys.stdout.write("%s %d%%\t\t\r" % (loader, percent))
+    sys.stdout.write("%s %d%%\r" % (loader, percent))
     if percent >= 100:
         sys.stdout.write("\n")
     sys.stdout.flush()

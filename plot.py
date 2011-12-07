@@ -9,7 +9,7 @@ def plot_cne(name, scores, valid):
     lookahead = len(scores) / 50
     scores = np.array([float(x) for x in scores])
     signal = smooth(scores, window_len=40, window='bartlett')
-    maxima = peakdetect(signal, lookahead=lookahead)[0]
+    maxima = peakdetect(signal, look5ahead=lookahead)[0]
     m_x = np.array([m[0] for m in maxima])
     m_y = np.array([m[1] for m in maxima])
     plt.plot(range(len(signal)), signal, 'k', m_x, m_y, 'bo')
@@ -17,19 +17,21 @@ def plot_cne(name, scores, valid):
     plt.xlabel('alignment')
     plt.ylabel('score')
     plt.title(name)
-    plt.savefig(name + '.png')
+    fig = plt.gcf()
+    fig.set_size_inches(8, 5)
+    plt.savefig(name + '.png', dpi=140)
 
 def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('identifier', help='Identifier name e.g. cne.100899.FST.')
-    parser.add_argument('--infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
+    parser.add_argument('-f', '--file', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                         help='Input file e.g. d2z.dat.')
     parser.add_argument('--extra_data', type=argparse.FileType('r'), default='hg18.toDanRer5.seqs.txt',
                         help='Extra data file e.g. hg18.toDanRer5.seqs.txt.')
     parser.add_argument('--valid', type=int, default=9, help='Field number of valid test coordinates.')
     OPTS = parser.parse_args()
-    cne_dict = parse_dat(read_fields(f=OPTS.infile))
+    cne_dict = parse_dat(read_fields(f=OPTS.file))
     line_tups = read_fields(f=OPTS.extra_data)
     cne_valids = {}
     for l in line_tups:

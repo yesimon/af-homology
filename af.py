@@ -19,7 +19,7 @@ def row_search(OPTS, m, line_tups):
         hits = m.scan([b], n=None, reverse_complement=True, sort=False)[0]
         scores = [score for index, score in hits]
         rows[name] = scores
-        progress(50, (float(i)+1)/len(line_tups)*100, pre="Processing '%s'" % name)
+        progress(50, (float(i)+1)/len(line_tups)*100, pre="Processing genes")
     pkl_filename = OPTS.model + '.pkl'
     sys.stdout.write("Writing pickle file %s. Do not exit!\n" % pkl_filename)
     pkl = open(OPTS.model + '.pkl', 'wb')
