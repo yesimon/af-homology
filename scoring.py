@@ -29,7 +29,7 @@ def overlap(cne_dict, extra):
       if overlap_coords(index_coords(extra[cne]['dr_co'], i, l=window_len),
                         extra[cne]['dr_valid_co']):
         results[cne]['rank'] = hit_rank + 1
-        results[cne]['sequence_length'] = len(scores)
+        results[cne]['places'] = len(scores) - window_len
         break
   return results
 
@@ -50,7 +50,7 @@ def ranked_peaks(cne_dict, extra):
       continue
     hit_rank = np.argmin(np.array([dist(cne, i) for i, score in maxima]))
     results[cne]['rank'] = hit_rank + 1
-    results[cne]['n_peaks'] = len(maxima)
+    results[cne]['places'] = len(maxima)
   return results
 
 def main():
@@ -66,15 +66,12 @@ def main():
   cne_dict = parse_dat(line_tups)
   extra = parse_extra_data(read_fields(f=OPTS.extra_data))
   if OPTS.scoring == 'ranked_peaks':
-    results = ranked_peaks(cne_dict, extra)
-    for cne, result in sorted(results.iteritems()):
-      sys.stdout.write('\t'.join([cne, str(result['rank']),
-                                  str(result['n_peaks'])]) + '\n')
+    results, stats = ranked_peaks(cne_dict, extra)
   elif OPTS.scoring == 'overlap':
-    results = overlap(cne_dict, extra)
-    for cne, result in sorted(results.iteritems()):
-      sys.stdout.write('\t'.join([cne, str(result['rank']),
-                                  str(result['sequence_length'])]) + '\n')
+    results, stats = overlap(cne_dict, extra)
+  for cne, result in sorted(results.iteritems()):
+    sys.stdout.write('\t'.join([cne, str(result['rank']),
+                                str(result['places'])]) + '\n')
 
 
 if __name__ == '__main__':
