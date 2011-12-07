@@ -53,9 +53,9 @@ def main():
   cne_dict = parse_dat(line_tups)
   extra = parse_extra_data(read_fields(f=OPTS.extra_data))
   if OPTS.scoring == 'ranked_peaks':
-    results, stats = ranked_peaks(cne_dict, extra)
+    results = ranked_peaks(cne_dict, extra)
   elif OPTS.scoring == 'overlap':
-    results, stats = overlap(cne_dict, extra)
+    results = overlap(cne_dict, extra)
   for cne, result in sorted(results.iteritems()):
     sys.stdout.write('\t'.join([cne, str(result['rank']),
                                 str(result['places'])]) + '\n')
