@@ -72,21 +72,31 @@ sub rc {
 }
 
 sub hexdiff_train {
-	my ($dna) = @_;
+	my ($dna_test, $dna_background) = @_;
 
-	%score = ();
+	my %tmp = ();
 
-	my %test = count_mers($dna, 6);
-	my %background = count_mers(shuffleStr($dna), 6);
+	my %test = count_mers($dna_test, 6);
+	my %background = count_mers($dna_background, 6);
 
 	foreach $val (sort {$test{$b} <=> $test{$a} } keys %test) {
 		#print "$val\t$test{$val}\t$background{$val}\n";
 		my $q = exists($background{$val}) ? $test{$val} / $background{$val} : $test{$val};
 
-		if ($q > 1) {
-			#print "$val\t$q\n";
-			$score{$val} = $q;
+		#print "$val\t$q\n";
+		$tmp{$val} = $q;
+	}
+
+	%score = ();
+	my $i = 0;
+
+	foreach $val (sort {$tmp{$b} <=> $tmp{$a} } keys %tmp) {
+		if ($i >= 200) {
+			last;
 		}
+
+		$score{$val} = $tmp{$val};
+		$i++;
 	}
 }
 
@@ -95,7 +105,6 @@ sub ymf_score {
 	my %count = count_mers($dna, 6);
 	my $score = 0;
 
-#	foreach $val (sort {$count{$b} <=> $count{$a} } keys %count)
 	foreach $val (keys %count)
 	{
 		if (exists $score{$val}) {
@@ -115,23 +124,35 @@ while (<STDIN>) {
 	my $end = $slice[3];
 	my $zebcoord = $slice[4];
 	my $human_dna = $slice[5];
+	my $human_region = $slice[6];
 	my $zebra_dna = $slice[7];
 
 	@slice = split(/\=|\:|\-/, $zebcoord);
 	my $zeb_chr = @slice[0];
 	my $zeb_start = @slice[1];
 
-	hexdiff_train($human_dna);
+	my $background_dna;
+	if ($ARGV[0] eq "scramble") {
+		$background_dna = shuffleStr($dna);
+	} elsif ($ARGV[0] eq "region") {
+		$background_dna = $human_region;
+		$background_dna =~ s/$human_dna//;
+	} else {
+		die "invalid argument\n";
+	}
+
+	hexdiff_train($human_dna, $background_dna);
 
 	my $i;
-	my $tlen = length($human_dna);
+	my $tlen = length($human_dna) * $ARGV[1];
 	for ($i = 0; $i < length($zebra_dna) - $tlen + 1; $i++) {
 		my $dna = substr($zebra_dna, $i, $tlen);
 		my $score = max(ymf_score($dna), ymf_score(rc($dna)));
 		#my $score = ymf_score($dna . "N" . rc($dna));
 		my $pstart = $zeb_start + $i;
 		my $pend = $pstart + $tlen;
-		print "$cns\t$chr\t$start\t$end\t$zeb_chr:$pstart-$pend\t$score\n";
+#		print "$cns\t$chr\t$start\t$end\t$zeb_chr:$pstart-$pend\t$score\n";
+		print "$cns\t$score\n";
 	}
 }
 
