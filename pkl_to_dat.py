@@ -10,7 +10,7 @@ def main():
     cne_dict = pickle.load(OPTS.infile)
 
     for cne, results in cne_dict.iteritems():
-        for coord, score in results:
+        for score in results:
             sys.stdout.write('%s\t%s\n' % (cne, score))
 
 if __name__ == '__main__':

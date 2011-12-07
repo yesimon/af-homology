@@ -3,7 +3,7 @@ import sys
 import cPickle as pickle
 from d2z import add_d2z_arguments, D2z
 from hexmcd import add_hexmcd_arguments, HexMCD
-from util import read_fields, index_coords, parse_coords, progress
+from util import read_fields, parse_coords, progress
 
 def row_search(OPTS, m, line_tups):
     """Writes the scan results to a pickle file.
@@ -17,10 +17,11 @@ def row_search(OPTS, m, line_tups):
         name, a, b, c, = l[0], l[OPTS.a-1], l[OPTS.b-1], parse_coords(l[OPTS.c-1])
         m.fit([a])
         hits = m.scan([b], n=None, reverse_complement=True, sort=False)[0]
-        coords = [(index_coords(c, index, l=m.l), score) for index, score in hits]
-        rows[name] = coords
+        scores = [score for index, score in hits]
+        rows[name] = scores
         progress(50, (float(i)+1)/len(line_tups)*100, pre="Processing '%s'" % name)
-    sys.stdout.write("Writing pickle file. Do not exit!\n")
+    pkl_filename = OPTS.model + '.pkl'
+    sys.stdout.write("Writing pickle file %s. Do not exit!\n" % pkl_filename)
     pkl = open(OPTS.model + '.pkl', 'wb')
     pickle.dump(rows, pkl, pickle.HIGHEST_PROTOCOL)
 

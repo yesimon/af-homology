@@ -2,23 +2,10 @@
 from collections import defaultdict
 from operator import itemgetter
 import sys
-import matplotlib.pyplot as plt
-import numpy as np
-from util import read_fields, parse_coords, parse_dat, overlap_coords, index_coords
-from peakdetect import peakdetect, smooth
 
-def parse_extra_data(line_tups):
-    extra = {}
-    for l in line_tups:
-      extra[l[0]] = {
-        'name': l[0],
-        'dr_co': parse_coords(l[4]),
-        'dr_valid_co': parse_coords(l[8]),
-        'dr_seq': l[7],
-        'hg_co': parse_coords('\t'.join(l[1:4])),
-        'hg_seq': l[5],
-      }
-    return extra
+import numpy as np
+from util import read_fields, parse_dat, overlap_coords, index_coords, parse_extra_data
+from peakdetect import peakdetect, smooth
 
 def overlap(cne_dict, extra):
   window_len = sum([len(d['hg_seq']) for d in extra.itervalues()])/float(len(extra))
@@ -40,7 +27,7 @@ def ranked_peaks(cne_dict, extra):
     return abs(i - v_i)
   results = defaultdict(dict)
   for cne, scores in cne_dict.iteritems():
-    lookahead = len(scores) / 50
+    lookahead = int(len(scores) / 50) + 1
     scores = np.array([float(x) for x in scores])
     signal = smooth(scores, window_len=40, window='bartlett')
     maxima = peakdetect(signal, lookahead=lookahead)[0]

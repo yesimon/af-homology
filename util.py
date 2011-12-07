@@ -33,6 +33,19 @@ def parse_dat(line_tups):
         cne_dict[cne].append(score)
     return cne_dict
 
+def parse_extra_data(line_tups):
+    extra = {}
+    for l in line_tups:
+      extra[l[0]] = {
+        'name': l[0],
+        'dr_co': parse_coords(l[4]),
+        'dr_valid_co': parse_coords(l[8]),
+        'dr_seq': l[7],
+        'hg_co': parse_coords('\t'.join(l[1:4])),
+        'hg_seq': l[5],
+      }
+    return extra
+
 def parse_coords(co):
     """Given a strand coordinate like 'chrX:1241-1888,+' or bed format return a
     dictionary of relevant coordinates. Raises exception on error.
@@ -72,7 +85,7 @@ def progress(width, percent, pre=None):
     spaces = math.floor(width - marks)
     loader = '[' + ('=' * int(marks)) + (' ' * int(spaces)) + ']'
     if pre: loader = pre + ' ' + loader
-    sys.stdout.write("%s %d%%\r" % (loader, percent))
+    sys.stdout.write("%s %d%%\t\t\r" % (loader, percent))
     if percent >= 100:
         sys.stdout.write("\n")
     sys.stdout.flush()
