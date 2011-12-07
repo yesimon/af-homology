@@ -16,7 +16,7 @@ def overlap(cne_dict, extra):
       if overlap_coords(index_coords(extra[cne]['dr_co'], i, l=window_len),
                         extra[cne]['dr_valid_co']):
         results[cne]['rank'] = hit_rank + 1
-        results[cne]['places'] = len(scores) - window_len
+        results[cne]['places'] = int(len(scores) - window_len)
         break
   return results
 

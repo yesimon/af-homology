@@ -14,6 +14,7 @@ downloads
 eggs
 fake-eggs
 parts
+.DS_Store
 dist
 .installed.cfg
 .mr.developer.cfg

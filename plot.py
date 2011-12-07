@@ -9,7 +9,7 @@ def plot_cne(name, scores, valid):
     lookahead = len(scores) / 50
     scores = np.array([float(x) for x in scores])
     signal = smooth(scores, window_len=40, window='bartlett')
-    maxima = peakdetect(signal, look5ahead=lookahead)[0]
+    maxima = peakdetect(signal, lookahead=lookahead)[0]
     m_x = np.array([m[0] for m in maxima])
     m_y = np.array([m[1] for m in maxima])
     plt.plot(range(len(signal)), signal, 'k', m_x, m_y, 'bo')
