@@ -13,7 +13,6 @@ Requirements
  * Biopython
  * numpy, scipy, scikits.statsmodels, matplotlib
  * twoBitToFa (UCSC Kent)
- * faRc (UCSC Kent)
 
 Pipeline
 --------
