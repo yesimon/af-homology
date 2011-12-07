@@ -22,5 +22,10 @@ rm tmp.dat tmp.fa
 cat hg18.bejscHumanCNE.toDanRer5Region.txt | awk '{print $4"\t"$1"\t"$2"\t"$3"\t"$8}' > tmp.txt
 
 # and finally put it all together
-paste tmp.txt first.txt second.txt third.txt > hg18.toDanRer5.seqs.txt
+paste tmp.txt first.txt second.txt third.txt > tmpseq.txt
 rm tmp.txt first.txt second.txt third.txt
+
+# and then include the correct answer at the end
+cat ans.txt | cut -f1,6 > tmp.txt
+join -1 1 -2 1 tmpseq.txt tmp.txt | sed 's/ /\t/g' > hg18.toDanRer5.seqs.txt
+rm tmpseq.txt tmp.txt
